@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Booking Confirmed</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#F5EFE3',
+            mist: '#D9E0E8',
+            navy: '#1F2A44',
+            charcoal: '#333333',
+            gold: '#C9A66B'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-cream min-h-screen flex items-center justify-center p-4 text-charcoal">
+
+  <main class="w-full max-w-md bg-white rounded-2xl shadow-lg overflow-hidden">
+
+    <!-- Header -->
+    <div class="bg-navy text-white text-center px-6 py-8">
+      <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gold">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-navy" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold">Slot Booked!</h1>
+      <p class="text-mist text-sm mt-1">{{ garage.name }}</p>
+    </div>
+
+    <!-- Slot number -->
+    <div class="px-6 pt-6 text-center">
+      <p class="text-xs uppercase tracking-widest text-charcoal/60">Your slot</p>
+      <p class="text-6xl font-extrabold text-navy mt-1">{{ slot_no }}</p>
+    </div>
+
+    <!-- Details -->
+    <dl class="px-6 py-6 space-y-3 text-sm">
+      <div class="flex justify-between border-b border-mist pb-2">
+        <dt class="text-charcoal/60">Name</dt>
+        <dd class="font-semibold">{{ name }}</dd>
+      </div>
+      <div class="flex justify-between border-b border-mist pb-2">
+        <dt class="text-charcoal/60">Vehicle No.</dt>
+        <dd class="font-semibold uppercase">{{ vehicle_no }}</dd>
+      </div>
+      {% if garage.address %}
+      <div class="flex justify-between border-b border-mist pb-2 gap-4">
+        <dt class="text-charcoal/60">Address</dt>
+        <dd class="font-semibold text-right">{{ garage.address }}</dd>
+      </div>
+      {% endif %}
+      {% if garage.contact %}
+      <div class="flex justify-between border-b border-mist pb-2">
+        <dt class="text-charcoal/60">Garage contact</dt>
+        <dd class="font-semibold">{{ garage.contact }}</dd>
+      </div>
+      {% endif %}
+    </dl>
+
+    <!-- Notice -->
+    <div class="mx-6 mb-6 rounded-lg bg-mist/60 p-4 text-xs text-charcoal">
+      <p class="font-semibold text-navy mb-1">Before you leave</p>
+      <p>
+        Your booking is saved on this device. When you scan the garage QR code
+        again, your slot will be <strong>released</strong> so others can use it.
+      </p>
+    </div>
+
+  </main>
+
+</body>
+</html>

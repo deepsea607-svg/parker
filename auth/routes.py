@@ -5,21 +5,44 @@ from app.models import db , User
 
 
 # register api routes
-@auth.route("/reg-api",methods=["POST"])
-def reg_api():
-        
-    data = request.get_json()
-    if data["password"] != data["password2"]:
-        return {'message':'Password not matched'} , 400
-    
-    if User.query.filter_by(username=data["username"]).first():
-        return jsonify({"msg": "Username already taken"}), 400
-    
-    new_user = User(username=data["username"].strip(), password=data["password"].strip()) #type:ignore
-    db.session.add(new_user)
-    db.session.commit()
 
-    return jsonify({"msg": "User registered successfully"}), 201
+from sqlalchemy.exc import IntegrityError
+
+
+@auth.route("/reg-api", methods=["POST"])
+def reg_api():
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"msg": "Invalid or missing JSON body"}), 400
+
+    # required fields
+    required = ["username", "password", "password2", "contact", "address"]
+    missing = [f for f in required if not str(data.get(f, "")).strip()]
+    if missing:
+        return jsonify({"msg": f"Missing fields: {', '.join(missing)}"}), 400
+
+    username = data["username"].strip()
+    password = data["password"].strip()
+    password2 = data["password2"].strip()
+    contact = data["contact"].strip()
+    address = data["address"].strip()
+
+
+    if User.query.filter_by(username=username).first():
+        return jsonify({"msg": "Username already taken"}), 409
+
+    new_user = User(username=username,password=password,contact=contact,address=address) #type:ignore
+
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return jsonify({"msg": "Username already taken"}), 409
+
+    return jsonify({
+        "msg": "User registered successfully",
+    }), 201
     
         
 # register api routes
@@ -52,12 +75,11 @@ def logout_api():
 
 
 #page serving routes
-
 @auth.route("/register")
 def register():
     try:
         verify_jwt_in_request()
-        return redirect("/runner/dashboard")
+        return redirect("/garage/admin")
     except:
         return render_template('register.html')
 
@@ -65,6 +87,6 @@ def register():
 def login():
     try:
         verify_jwt_in_request()
-        return redirect("/runner/dashboard")
+        return redirect("/garage/admin")
     except:
         return render_template('login.html')

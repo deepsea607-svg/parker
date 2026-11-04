@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Garage Timetable – Parkbay</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#F7F4EC',
+            mist: '#DDE6E4',
+            navy: '#0A2438',
+            ink: '#1F2729',
+            gold: '#C9AB6F'
+          },
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body class="min-h-screen bg-cream font-sans text-ink antialiased">
+  <main class="mx-auto max-w-4xl px-4 py-10">
+    <a href="/" class="mb-4 inline-block text-sm font-semibold text-navy underline decoration-gold decoration-2 underline-offset-4">&larr; Back to home</a>
+    
+    <div class="rounded-[2rem] bg-mist p-4 md:p-8">
+      <!-- Header without selector dropdown -->
+      <div class="mb-6 flex flex-wrap items-center justify-between gap-4 bg-navy px-6 py-4 rounded-2xl text-cream">
+        <div>
+          <h1 class="text-xl font-extrabold" id="garageTitle">{{ garage.name }}</h1>
+          <p class="text-sm text-cream/70">{{ garage.address }} | Open: <span class="font-semibold text-gold">{{ garage.day_slot }}</span> ({{ garage.time_slot }})</p>
+        </div>
+      </div>
+
+      <!-- Out of Bounds / Operating Schedule Warning Banner -->
+      <div id="availabilityNotice" class="mb-6 hidden items-center gap-3 rounded-2xl bg-amber-50 border border-amber-200 px-5 py-3.5 text-amber-900 shadow-sm">
+        <svg class="h-5 w-5 shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+        <span class="text-sm font-medium"><strong>Notice:</strong> This garage is currently <strong>closed</strong> because it falls outside of its scheduled operational hours or days (<span class="underline">{{ garage.day_slot }}</span>, <span class="underline">{{ garage.time_slot }}</span>). Bookings may be unavailable.</span>
+      </div>
+
+      <div class="overflow-hidden rounded-2xl bg-white shadow">
+        <div class="bg-navy/90 px-5 py-3 text-lg font-extrabold text-cream flex justify-between items-center">
+          <span>Slots Timetable</span>
+          <span class="rounded-full bg-gold px-3 py-1 text-xs font-semibold text-navy">Contact: {{ garage.contact }}</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[640px] text-left">
+            <thead class="bg-mist text-sm text-navy">
+              <tr>
+                <th class="px-4 py-3 font-bold">Slot No</th>
+                <th class="px-4 py-3 font-bold">Vehicle Type</th>
+                <th class="px-4 py-3 font-bold">Status</th>
+                <th class="px-4 py-3 font-bold">Action / Booked by</th>
+                <th class="px-4 py-3 font-bold">Contact</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for slot in garage.slots %}
+              <tr class="border-t border-ink/10">
+                <td class="px-4 py-3"><span class="rounded-full bg-mist px-3 py-1 text-sm font-medium text-navy">{{ slot.slot_no }}</span></td>
+                <td class="px-4 py-3 text-sm font-semibold text-navy">{{ slot.vehicle_type }}</td>
+                <td class="px-4 py-3">
+                  <span class="rounded-full px-3 py-1 text-sm font-semibold 
+                    {% if slot.status == 'available' %}bg-emerald-100 text-emerald-800
+                    {% else %}bg-amber-100 text-amber-800{% endif %}">
+                    {{ slot.status | capitalize }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-sm">
+                  {% if slot.status == 'available' %}
+                    <a href="#" class="rounded-full bg-navy px-4 py-1.5 text-sm font-semibold text-cream hover:bg-ink focus:outline-none focus:ring-2 focus:ring-gold">Park here</a>
+                  {% else %}
+                    {{ slot.booked_by or 'Booked' }}
+                  {% endif %}
+                </td>
+                <td class="whitespace-nowrap px-4 py-3 text-sm text-ink/70">{{ slot.contact or '—' }}</td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="5" class="px-4 py-8 text-center text-sm text-ink/60">No slots available for this garage.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Operating status check function
+    function checkOperatingStatus() {
+      const timeSlotStr = "{{ garage.time_slot }}"; // e.g., "09:00-18:00"
+      const daySlotStr = "{{ garage.day_slot }}";     // e.g., "Mon-Sat"
+      
+      if (!timeSlotStr || !timeSlotStr.includes('-')) return;
+
+      const [openTime, closeTime] = timeSlotStr.split('-').map(s => s.trim());
+      const now = new Date();
+      
+      const currentHours = String(now.getHours()).padStart(2, '0');
+      const currentMinutes = String(now.getMinutes()).padStart(2, '0');
+      const currentTime = `${currentHours}:${currentMinutes}`;
+
+      const isTimeOut = currentTime < openTime || currentTime > closeTime;
+
+      const daysMap = { 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' };
+      const currentDayName = daysMap[now.getDay()];
+      
+      let isDayOut = false;
+      if (daySlotStr.includes('-')) {
+        const [startDay, endDay] = daySlotStr.split('-').map(s => s.trim());
+        const orderedDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const startIdx = orderedDays.indexOf(startDay);
+        const endIdx = orderedDays.indexOf(endDay);
+        const currentIdx = orderedDays.indexOf(currentDayName);
+        
+        if (startIdx !== -1 && endIdx !== -1 && currentIdx !== -1) {
+          if (startIdx <= endIdx) {
+            isDayOut = currentIdx < startIdx || currentIdx > endIdx;
+          } else {
+            isDayOut = !(currentIdx >= startIdx || currentIdx <= endIdx);
+          }
+        }
+      }
+
+      // Trigger the warning banner if time or day is out of bounds
+      if (isTimeOut || isDayOut) {
+        const noticeEl = document.getElementById('availabilityNotice');
+        if (noticeEl) {
+          noticeEl.classList.remove('hidden');
+          noticeEl.classList.add('flex');
+        }
+      }
+    }
+
+    // Run check immediately on load
+    checkOperatingStatus();
+  </script>
+</body>
+</html>

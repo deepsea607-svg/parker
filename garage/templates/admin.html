@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin – Parkbay</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: {
+        colors: { cream: '#F7F4EC', mist: '#bfdbd5', navy: '#0A2438', ink: '#1F2729', gold: '#C9AB6F' , mute: '#fcfcfc'},
+        fontFamily: { sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'] }
+      } }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+  html, body {
+    background-color: #0A2438; /* Matches your navy header */
+  }
+</style>
+  <style>dialog::backdrop{background:rgba(10,36,56,.55)}</style>
+</head>
+<body class="min-h-screen bg-cream font-sans text-ink antialiased">
+  <!-- route : /admin -->
+  <header class="border-b border-navy/10 bg-navy text-cream">
+    <div class="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-4">
+      <div>
+        <h1 class="text-xl font-extrabold">Hello, {{ user_data.username }} </h1>
+        <p class="text-sm text-cream/70">Manage garages, slots and bookings</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="addNew" type="button" class="rounded-full bg-gold px-5 py-2.5 text-sm font-bold text-navy transition hover:bg-cream focus:outline-none focus:ring-2 focus:ring-cream">Add garage</button>
+        <button id="logoutBtn" type="button" class="rounded-full border border-cream/30 px-5 py-2.5 text-sm font-semibold text-cream transition hover:bg-mute/10 focus:outline-none focus:ring-2 focus:ring-gold">Logout</button>
+      </div>
+     </div>
+  </header>
+
+  <main class="mx-auto flex max-w-[1400px] flex-col gap-8 p-4">
+
+    <!-- 1. Garage cards -->
+    <section aria-labelledby="garages-h">
+      <div class="mb-3 flex flex-wrap items-end justify-between gap-2">
+        <h2 id="garages-h" class="text-lg font-bold text-navy">Garages</h2>
+        <p id="summary" class="text-sm text-ink/60"></p>
+      </div>
+      <div id="cards" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
+    </section>
+
+    <section aria-labelledby="qr-h">
+      <div class="mb-3">
+        <h2 id="qr-h" class="text-lg font-bold text-navy">Garage QR Codes & Quick Links</h2>
+        <p class="text-sm text-ink/60">Scan or share these links with customers for direct timetable viewing and parking booking.</p>
+      </div>
+      <div id="qrCards" class="grid gap-4 sm:grid-cols-1 xl:grid-cols-2"></div>
+    </section>
+
+    <!-- 2. Timetable -->
+    <section aria-labelledby="tt-h" class="min-w-0">
+      <div class="overflow-hidden rounded-2xl bg-mute shadow">
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-navy px-5 py-4">
+          <h2 id="tt-h" class="text-xl font-extrabold text-cream">Timetable</h2>
+          <label class="flex items-center gap-2 text-sm text-cream/80">Garage
+            <select id="ttGarage" class="rounded-full border-0 bg-cream px-3 py-1.5 text-sm font-semibold text-navy focus:outline-none focus:ring-2 focus:ring-gold"></select>
+          </label>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[640px] text-left">
+            <thead class="bg-mist text-sm text-navy">
+              <tr>
+                <th class="px-4 py-3 font-bold">Slot No</th>
+                <th class="px-4 py-3 font-bold">Vehicle Type</th>
+                <th class="px-4 py-3 font-bold">Status</th>
+                <th class="px-4 py-3 font-bold">Booked by</th>
+                <th class="px-4 py-3 font-bold">Contact</th>
+              </tr>
+            </thead>
+            <tbody id="ttBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Edit / add form -->
+    <section id="formSection" aria-labelledby="form-h" class="scroll-mt-4">
+      <form id="garageForm" action="/garage/api" method="post" class="rounded-2xl border border-navy/15 bg-mute p-5 shadow-sm md:p-6">
+        <input type="hidden" name="user_id" value="{{ user_data.id }}">
+        <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 id="form-h" class="text-lg font-bold text-navy">Add garage</h2>
+            <p id="formHint" class="text-sm text-ink/60">Fill in the details to add a new garage.</p>
+          </div>
+          <button id="cancelEdit" type="button" class="hidden rounded-full border border-navy/30 px-4 py-2 text-sm font-semibold text-navy hover:bg-mist focus:outline-none focus:ring-2 focus:ring-gold">Cancel edit</button>
+        </div>
+
+        <div class="grid gap-5 md:grid-cols-2">
+          <div>
+            <label for="garage-name" class="mb-1.5 block text-sm font-semibold text-navy">Garage name</label>
+            <input id="garage-name" name="name" type="text" required class="w-full rounded-lg border border-navy/30 bg-mute px-3 py-2.5 text-sm focus:border-navy focus:outline-none focus:ring-2 focus:ring-gold/60" />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="two" class="mb-1.5 block text-sm font-semibold text-navy">Two-wheeler slots</label>
+              <input id="two" name="two_wheeler_capacity" type="number" min="0" value="0" required class="w-full rounded-lg border border-navy/30 bg-mute px-3 py-2.5 text-sm focus:border-navy focus:outline-none focus:ring-2 focus:ring-gold/60" />
+            </div>
+            <div>
+              <label for="four" class="mb-1.5 block text-sm font-semibold text-navy">Four-wheeler slots</label>
+              <input id="four" name="four_wheeler_capacity" type="number" min="0" value="0" required class="w-full rounded-lg border border-navy/30 bg-mute px-3 py-2.5 text-sm focus:border-navy focus:outline-none focus:ring-2 focus:ring-gold/60" />
+            </div>
+          </div>
+          <div class="md:col-span-2">
+            <label for="address" class="mb-1.5 block text-sm font-semibold text-navy">Address</label>
+            <textarea id="address" name="address" rows="2" required class="w-full rounded-lg border border-navy/30 bg-mute px-3 py-2.5 text-sm focus:border-navy focus:outline-none focus:ring-2 focus:ring-gold/60"></textarea>
+          </div>
+
+          <div>
+            <label for="contact" class="mb-1.5 block text-sm font-semibold text-navy">Garage Contact</label>
+            <input id="contact" name="contact" type="text" required class="w-full rounded-lg border border-navy/30 bg-mute px-3 py-2.5 text-sm focus:border-navy focus:outline-none focus:ring-2 focus:ring-gold/60" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="time_slot" class="mb-1.5 block text-sm font-semibold text-navy">Time Slot (e.g. 09:00-18:00)</label>
+              <input id="time_slot" name="time_slot" type="text" required class="w-full rounded-lg border border-navy/30 bg-mute px-3 py-2.5 text-sm focus:border-navy focus:outline-none focus:ring-2 focus:ring-gold/60" />
+            </div>
+            <div>
+              <label for="day_slot" class="mb-1.5 block text-sm font-semibold text-navy">Day Slot (e.g. Mon-Sat)</label>
+              <input id="day_slot" name="day_slot" type="text" required class="w-full rounded-lg border border-navy/30 bg-mute px-3 py-2.5 text-sm focus:border-navy focus:outline-none focus:ring-2 focus:ring-gold/60" />
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end">
+          <button id="saveBtn" type="submit" class="rounded-full bg-navy px-6 py-3 font-bold text-cream transition hover:bg-ink focus:outline-none focus:ring-2 focus:ring-gold">Add garage</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <footer class="bg-navy py-12 text-center text-cream">
+    <p class="text-lg font-bold">Parkbay</p>
+    <p class="mt-2 text-sm text-cream/70">Garage slot booking for riders and drivers.</p>
+    <p class="mt-6 text-xs text-cream/50">&copy; 2026 Parkbay</p>
+  </footer>
+  <!-- Delete confirmation -->
+  <!-- Delete confirmation dialog -->
+<dialog id="delDialog" class="w-[min(92vw,26rem)] rounded-2xl bg-mute p-0 shadow-xl">
+    <!-- Point action to /api/garages -->
+    <form action="/garage/api" method="post" class="p-6">
+      <input type="hidden" name="action" value="delete" />
+      <input type="hidden" name="garage_name" id="delName" />
+      <h2 class="text-lg font-bold text-navy">Delete this garage?</h2>
+      <p class="mt-2 text-sm text-ink/70"><span id="delLabel" class="font-semibold text-ink"></span> and all of its slots will be removed. This can't be undone.</p>
+      <div class="mt-6 flex justify-end gap-3">
+        <button type="button" id="delCancel" class="rounded-full border border-navy/30 px-5 py-2.5 text-sm font-semibold text-navy hover:bg-mist focus:outline-none focus:ring-2 focus:ring-gold">Keep garage</button>
+        <button type="submit" class="rounded-full bg-red-700 px-5 py-2.5 text-sm font-bold text-white hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-300">Delete garage</button>
+      </div>
+    </form>
+</dialog>
+
+  <script>
+    const userData = {{ user_data | tojson }};
+    const garages = userData.garages || [];
+
+    const STATUS = { available: 'bg-emerald-100 text-emerald-800', booked: 'bg-amber-100 text-amber-800' };
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39; schist'}[c] || c));
+    
+    let selected = garages[0]?.name;
+
+    function renderCards() {
+      const totalSlots = garages.reduce((n, g) => n + g.two_wheeler_capacity + g.four_wheeler_capacity, 0);
+      $('summary').textContent = `${garages.length} garage${garages.length === 1 ? '' : 's'} · ${totalSlots} slots in total`;
+      
+      $('cards').innerHTML = garages.length ? garages.map((g, i) => `
+        <article class="flex flex-col overflow-hidden rounded-2xl bg-mute shadow ${g.name === selected ? 'ring-2 ring-gold' : 'ring-1 ring-navy/10'}">
+          <div class="flex items-start justify-between gap-3 bg-mist px-5 py-4">
+            <div class="min-w-0">
+              <h3 class="truncate text-lg font-extrabold text-navy">${esc(g.name)}</h3>
+              <p class="mt-0.5 text-sm text-ink/70">${esc(g.address)}</p>
+            </div>
+            <button type="button" data-view="${i}" class="shrink-0 rounded-full bg-cream px-3 py-1.5 text-xs font-semibold text-navy hover:bg-mute focus:outline-none focus:ring-2 focus:ring-gold">View slots</button>
+          </div>
+          <div class="grid grid-cols-2 divide-x divide-navy/10 border-b border-navy/10">
+            <div class="px-5 py-3"><p class="text-2xl font-extrabold text-navy">${g.two_wheeler_capacity}</p><p class="text-xs text-ink/60">Two-wheeler slots</p></div>
+            <div class="px-5 py-3"><p class="text-2xl font-extrabold text-navy">${g.four_wheeler_capacity}</p><p class="text-xs text-ink/60">Four-wheeler slots</p></div>
+          </div>
+          <div class="flex flex-1 flex-col gap-3 px-5 py-4 text-sm">
+            <div><p class="mb-1 text-xs font-semibold text-ink/60">Timing & Days</p>
+              <div class="flex flex-wrap gap-2">
+                <span class="rounded-full bg-mist px-3 py-1 font-medium text-navy">${esc(g.time_slot)}</span>
+                <span class="rounded-full bg-mist px-3 py-1 font-medium text-navy">${esc(g.day_slot)}</span>
+              </div>
+            </div>
+            <div><p class="mb-1 text-xs font-semibold text-ink/60">Contact</p><p class="font-medium text-navy">${esc(g.contact)}</p></div>
+          </div>
+          <div class="flex gap-2 border-t border-navy/10 px-5 py-3">
+            <button type="button" data-edit="${i}" class="flex-1 rounded-full bg-navy px-4 py-2 text-sm font-bold text-cream hover:bg-ink focus:outline-none focus:ring-2 focus:ring-gold">Edit</button>
+            <button type="button" data-del="${i}" class="flex-1 rounded-full border border-red-300 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-300">Delete</button>
+          </div>
+        </article>`).join('')
+        : '<p class="rounded-2xl bg-mute p-6 text-sm text-ink/60 shadow">No garages yet. Use the form below to add your first one.</p>';
+    
+
+
+    const hostUrl = window.location.origin;
+      $('qrCards').innerHTML = garages.length ? garages.map(g => {
+        const publicUrl = `${hostUrl}/garage/${userData.username}/${g.id}`;
+        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(publicUrl)}`;
+        const bookingUrl = `${hostUrl}/garage/qr/${userData.username}/${g.id}`;
+
+        return `
+          <div class="flex flex-col sm:flex-row items-center gap-5 rounded-2xl bg-mute p-5 shadow border border-navy/10">
+            <!-- Left: Automatically generated QR code image -->
+            <div class="shrink-0 bg-mist p-3 rounded-xl border border-navy/10">
+              <img src="${qrApiUrl}" alt="QR for ${esc(g.name)}" class="w-32 h-32 object-contain" />
+            </div>
+            
+            <!-- Right: URLs & tutorials/links -->
+            <div class="flex flex-col gap-2 min-w-0 flex-1 text-sm">
+              <h3 class="text-base font-extrabold text-navy truncate">${esc(g.name)}</h3>
+              
+              <div class="flex flex-col gap-1">
+                <span class="text-xs font-semibold text-ink/60">Public Table URL:</span>
+                <a href="${publicUrl}" target="_blank" class="truncate font-medium text-navy underline decoration-gold decoration-2 underline-offset-2 hover:text-gold">${publicUrl}</a>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <span class="text-xs font-semibold text-ink/60">Direct Booking Link:</span>
+                <a href="${bookingUrl}" target="_blank" class="truncate font-medium text-navy underline decoration-gold decoration-2 underline-offset-2 hover:text-gold">${bookingUrl}</a>
+              </div>
+
+              <p class="text-xs text-ink/50 mt-1">Tip: Customers scan the QR code to check live availability or park their vehicles directly.</p>
+            </div>
+          </div>
+        `;
+      }).join('') : '<p class="text-sm text-ink/60">No QR codes available.</p>';
+    }
+
+
+    function renderTable() {
+      const g = garages.find(x => x.name === selected);
+      $('ttGarage').innerHTML = garages.map(x => `<option value="${esc(x.name)}" ${x.name === selected ? 'selected' : ''}>${esc(x.name)}</option>`).join('');
+      
+      const rows = g && g.slots ? g.slots.map(s => `
+        <tr class="border-t border-ink/10">
+          <td class="px-4 py-3 font-bold text-navy">${esc(s.slot_no)}</td>
+          <td class="px-4 py-3 text-sm text-ink/80">${esc(s.vehicle_type)}</td>
+          <td class="px-4 py-3"><span class="inline-block rounded-full px-3 py-1 text-xs font-semibold ${STATUS[s.status] || 'bg-mist text-navy'}">${esc(s.status)}</span></td>
+          <td class="px-4 py-3 text-sm text-ink/70">${esc(s.booked_by || '—')}</td>
+          <td class="whitespace-nowrap px-4 py-3 text-sm text-ink/70">${esc(s.contact || '—')}</td>
+        </tr>`).join('') : '';
+        
+      $('ttBody').innerHTML = rows || '<tr><td colspan="5" class="px-4 py-8 text-center text-sm text-ink/60">No slots found for this garage.</td></tr>';
+    }
+
+    function setForm(g) {
+      const editing = !!g;
+      $('garageForm').reset();
+      $('garage-name').value = g?.name ?? '';
+      $('address').value = g?.address ?? '';
+      $('two').value = g?.two_wheeler_capacity ?? '';
+      $('four').value = g?.four_wheeler_capacity ?? '';
+      $('contact').value = g?.contact ?? '';
+      $('time_slot').value = g?.time_slot ?? '';
+      $('day_slot').value = g?.day_slot ?? '';
+
+      $('form-h').textContent = editing ? `Edit ${g.name}` : 'Add garage';
+      $('formHint').textContent = editing ? 'Modify the details and save changes.' : 'Fill in the details to add a new garage.';
+      $('saveBtn').textContent = editing ? 'Save changes' : 'Add garage';
+      $('cancelEdit').classList.toggle('hidden', !editing);
+      $('formSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    $('logoutBtn').addEventListener('click', async () => {
+      try {
+        const response = await fetch('/auth/logout-api', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (response.ok) {
+          window.location.href = '/'; // Redirect to login or home page after logout
+        } else {
+          alert('Logout failed. Please try again.');
+        }
+      } catch (err) {
+        console.error('Logout error:', err);
+      }
+    });
+
+    $('cards').addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.edit) { 
+        const g = garages[b.dataset.edit]; 
+        selected = g.name; 
+        renderCards(); 
+        renderTable(); 
+        setForm(g); 
+      }
+      if (b.dataset.view) { 
+        selected = garages[b.dataset.view].name; 
+        renderCards(); 
+        renderTable(); 
+        $('tt-h').scrollIntoView({ behavior: 'smooth' }); 
+      }
+      if (b.dataset.del) { 
+        const g = garages[b.dataset.del]; 
+        $('delName').value = g.name; 
+        $('delLabel').textContent = g.name; 
+        $('delDialog').showModal(); 
+      }
+    });
+
+    $('ttGarage').addEventListener('change', e => { 
+      selected = e.target.value; 
+      renderCards(); 
+      renderTable(); 
+    });
+
+    $('addNew').addEventListener('click', () => setForm(null));
+    $('cancelEdit').addEventListener('click', () => setForm(null));
+    $('delCancel').addEventListener('click', () => $('delDialog').close());
+    $('delDialog').addEventListener('click', e => { if (e.target === $('delDialog')) $('delDialog').close(); });
+
+    renderCards(); 
+    renderTable();
+  </script>
+</body>
+</html>

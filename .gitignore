@@ -16,6 +16,9 @@ instance/
 # Logs
 *.log
 
+project_context.txt
+
+
 # Unit test / coverage reports
 htmlcov/
 .tox/

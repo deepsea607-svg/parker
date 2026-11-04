@@ -1,396 +1,176 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login</title>
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: #252737;
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-      }
-
-      .login-container {
-        background: #0f1423;
-        border-radius: 20px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-        width: 100%;
-        max-width: 420px;
-        padding: 50px 40px;
-        border: 1px solid rgba(168, 255, 120, 0.1);
-      }
-
-      .logo {
-        text-align: center;
-        margin-bottom: 40px;
-      }
-
-      .logo-icon {
-        font-size: 72px;
-        margin-bottom: 15px;
-      }
-
-      .logo h1 {
-        font-size: 32px;
-        color: #e8e7fc;
-        margin-bottom: 8px;
-      }
-
-      .logo p {
-        color: #9ca3af;
-        font-size: 15px;
-      }
-
-      .form-group {
-        margin-bottom: 20px;
-      }
-
-      .form-group label {
-        display: block;
-        color: #e5e7eb;
-        font-weight: 600;
-        margin-bottom: 8px;
-        font-size: 14px;
-      }
-
-      .form-group input {
-        width: 100%;
-        padding: 14px 16px;
-        border: 2px solid #3a3d47;
-        border-radius: 10px;
-        font-size: 15px;
-        transition: all 0.3s ease;
-        font-family: inherit;
-        background: #1a1d29;
-        color: #ffffff;
-      }
-
-      .form-group input:focus {
-        outline: none;
-        border-color: #a8ff78;
-        box-shadow: 0 0 0 2px rgba(168, 255, 120, 0.1);
-      }
-
-      .password-wrapper {
-        position: relative;
-      }
-
-      .password-wrapper input {
-        padding-right: 50px;
-      }
-
-      .error-message {
-        color: #ff7878;
-        font-size: 13px;
-        margin-top: 5px;
-        display: none;
-      }
-
-      .error-message.show {
-        display: block;
-      }
-
-      .form-options {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 25px;
-        font-size: 14px;
-      }
-
-      .toggle-password {
-        position: absolute;
-        right: 12px;
-        top: 55%;
-        transform: translateY(-50%);
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 8px;
-        font-size: 20px;
-        color: #9ca3af;
-        transition: color 0.2s ease;
-      }
-
-      .toggle-password:hover {
-        color: #a8ff78;
-      }
-
-      .submit-btn {
-        width: 100%;
-        background: #cecde2;
-        color: #1a1d29;
-        border: none;
-        padding: 12px;
-        border-radius: 10px;
-        font-size: 16px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
-
-      .submit-btn:hover {
-        transform: translateY(-2px);
-      }
-
-      .register-link {
-        margin-top: 30px;
-        text-align: center;
-        color: #9ca3af;
-        font-size: 14px;
-      }
-
-      .register-link a {
-        color: #a8ff78;
-        text-decoration: none;
-        font-weight: 600;
-      }
-
-      .register-link a:hover {
-        text-decoration: underline;
-      }
-
-      .success-message {
-        background: rgba(168, 255, 120, 0.1);
-        color: #a8ff78;
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        font-size: 14px;
-        text-align: center;
-        display: none;
-        border: 1px solid rgba(168, 255, 120, 0.3);
-      }
-
-      .success-message.show {
-        display: block;
-      }
-
-      .fail-message {
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        font-size: 14px;
-        text-align: center;
-        display: none;
-        background: rgba(255, 120, 120, 0.1); /* soft red background */
-        color: #ff7878; /* bright red text */
-        border: 1px solid rgba(255, 120, 120, 0.3);
-      }
-
-      .fail-message.show {
-        display: block;
-      }
-
-      @media (max-width: 480px) {
-        .login-container {
-          padding: 40px 30px;
-        }
-
-        .logo h1 {
-          font-size: 28px;
-        }
-
-        .form-options {
-          flex-direction: column;
-          gap: 12px;
-          align-items: flex-start;
-        }
-      }
-    </style>
+    <title>Log in – Parkbay</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              cream: "#F7F4EC",
+              mist: "#DDE6E4",
+              navy: "#0A2438",
+              ink: "#1F2729",
+              gold: "#C9AB6F",
+            },
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', "system-ui", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
   </head>
-  <body>
-    <div class="login-container">
-      <div class="logo">
-        <div class="logo-icon"></div>
-        <h1>Welcome Back</h1>
-        <p>Login to TrySQL</p>
-      </div>
-
-      <div class="success-message" id="successMessage">
-        ✓ Login successful! Redirecting...
-      </div>
-      <div class="fail-message" id="failMessage">✗ Login failed!</div>
-
-      <form id="loginForm" onsubmit="handleSubmit(event)">
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            placeholder="Enter your username"
-            required
-          />
-          <div class="error-message" id="usernameError"></div>
+  <body class="min-h-screen bg-cream font-sans text-ink antialiased">
+    <!-- route : /auth/login -->
+    <main class="mx-auto flex min-h-screen max-w-4xl items-center px-4 py-10">
+      <div
+        class="grid w-full gap-6 rounded-[2rem] bg-mist p-5 md:grid-cols-2 md:p-8"
+      >
+        <div class="flex flex-col justify-center gap-3 p-4 text-navy md:p-8">
+          <h2 class="text-3xl font-extrabold leading-tight">Welcome back.</h2>
+          <p class="text-ink/80">
+            Log in to manage your bookings or your garages.
+          </p>
+          <a
+            href="/auth/register"
+            class="mt-2 w-fit font-semibold underline decoration-gold decoration-2 underline-offset-4 hover:text-ink"
+            >Create a new account</a
+          >
         </div>
-
-        <div class="form-group">
-          <label for="password">Password</label>
-          <div class="password-wrapper">
+        <form
+          id="loginForm"
+          novalidate
+          class="flex flex-col gap-5 rounded-2xl bg-navy p-6 text-cream shadow-lg"
+        >
+          <h1 class="text-2xl font-extrabold">Login form</h1>
+          <div>
+            <label
+              for="username"
+              class="mb-1.5 block text-sm font-semibold text-cream"
+              >Username</label
+            >
             <input
-              type="password"
+              id="username"
+              name="username"
+              type="text"
+              autocomplete="username"
+              required
+              class="w-full rounded-lg border border-cream/30 bg-white/5 px-3 py-2.5 text-cream placeholder-cream/40 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/40"
+            />
+          </div>
+          <div>
+            <label
+              for="password"
+              class="mb-1.5 block text-sm font-semibold text-cream"
+              >Password</label
+            >
+            <input
               id="password"
               name="password"
-              placeholder="Enter your password"
+              type="password"
+              autocomplete="current-password"
               required
+              class="w-full rounded-lg border border-cream/30 bg-white/5 px-3 py-2.5 text-cream placeholder-cream/40 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/40"
             />
-            <button
-              type="button"
-              class="toggle-password"
-              onclick="togglePassword()"
-            >
-              <svg
-                width="20px"
-                height="20px"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                <g
-                  id="SVGRepo_tracerCarrier"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                ></g>
-                <g id="SVGRepo_iconCarrier">
-                  <path
-                    d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12"
-                    stroke="#3a3d47"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  ></path>
-                  <path
-                    d="M1 12C1 12 5 20 12 20C19 20 23 12 23 12"
-                    stroke="#3a3d47"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  ></path>
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="3"
-                    stroke="#3a3d47"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  ></circle>
-                </g>
-              </svg>
-            </button>
           </div>
-          <div class="error-message" id="passwordError"></div>
-        </div>
-
-        <button type="submit" class="submit-btn">Login</button>
-      </form>
-
-      <div class="register-link">
-        Don't have an account? <a href="register">Sign up</a>
+          <p
+            id="formMsg"
+            role="alert"
+            class="hidden rounded-lg px-3 py-2 text-sm font-semibold"
+          ></p>
+          <button
+            id="loginBtn"
+            type="submit"
+            class="mt-4 rounded-full bg-gold px-6 py-3 font-bold text-navy transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-cream disabled:opacity-60"
+          >
+            Login
+          </button>
+        </form>
       </div>
-    </div>
-
+    </main>
     <script>
-      function togglePassword() {
-        var field = document.getElementById("password");
-        var button = field.nextElementSibling;
+      const form = document.getElementById("loginForm");
+      const msg = document.getElementById("formMsg");
+      const btn = document.getElementById("loginBtn");
 
-        if (field.type === "password") {
-          field.type = "text";
-          button.innerHTML = `<svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M2 2L22 22" stroke="#3a3d47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M6.71277 6.7226C3.66479 8.79527 2 12 2 12C2 12 5.63636 19 12 19C14.0503 19 15.8174 18.2734 17.2711 17.2884M11 5.05822C11.3254 5.02013 11.6588 5 12 5C18.3636 5 22 12 22 12C22 12 21.3082 13.3317 20 14.8335" stroke="#3a3d47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M14 14.2362C13.4692 14.7112 12.7684 15.0001 12 15.0001C10.3431 15.0001 9 13.657 9 12.0001C9 11.1764 9.33193 10.4303 9.86932 9.88818" stroke="#3a3d47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>`;
-        } else {
-          field.type = "password";
-          button.innerHTML = `<svg width="20px" height="20px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12" stroke="#3a3d47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <path d="M1 12C1 12 5 20 12 20C19 20 23 12 23 12" stroke="#3a3d47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> <circle cx="12" cy="12" r="3" stroke="#3a3d47" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></circle> </g></svg>`;
-        }
+      function showMsg(text, ok = false) {
+        msg.textContent = text;
+        msg.className =
+          "rounded-lg px-3 py-2 text-sm font-semibold " +
+          (ok
+            ? "bg-green-500/20 text-green-200"
+            : "bg-red-500/20 text-red-200");
       }
 
-      function showError(id, message) {
-        const errorEl = document.getElementById(id + "Error");
-        if (!errorEl) return;
-
-        errorEl.textContent = message;
-        errorEl.classList.add("show");
+      function fail(text, fieldId) {
+        showMsg(text);
+        if (fieldId) document.getElementById(fieldId).focus();
+        return false;
       }
 
-      function clearAllErrors() {
-        document.querySelectorAll(".error-message").forEach((el) => {
-          el.textContent = "";
-          el.classList.remove("show");
-        });
+      function validate(v) {
+        if (!v.username) return fail("Please enter your username.", "username");
+        if (v.username.length < 3 || v.username.length > 50)
+          return fail("Username must be 3-50 characters.", "username");
+        if (!v.password) return fail("Please enter your password.", "password");
+        if (v.password.length < 6)
+          return fail("Password must be at least 6 characters.", "password");
+        return true;
       }
 
-      function handleSubmit(event) {
-        event.preventDefault();
-        clearAllErrors();
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        msg.className = "hidden";
 
-        var username = document.getElementById("username").value;
-        var password = document.getElementById("password").value;
+        const values = {
+          username: form.username.value.trim(),
+          password: form.password.value.trim(),
+        };
 
-        var isValid = true;
+        if (!validate(values)) return;
 
-        // Validate username
-        if (username.length < 6) {
-          showError("username", "Username must be at least 6 characters");
-          isValid = false;
-        }
+        btn.disabled = true;
+        btn.textContent = "Logging in...";
 
-        // Validate password
-        if (password.length < 6) {
-          showError("password", "Password must be at least 6 characters");
-          isValid = false;
-        }
-
-        document
-          .getElementById("password")
-          .addEventListener("keypress", function (event) {
-            if (event.key === "Enter") {
-              handleSubmit(event);
-            }
-          });
-
-        if (isValid) {
-          // Show success message
-
-          const res = fetch("/auth/login-api", {
+        try {
+          const res = await fetch("/auth/login-api", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              username: username,
-              password: password,
-            }),
-          }).then((res) => {
-            if (!res.ok) {
-              var errorMsg = document.getElementById("failMessage");
-              errorMsg.classList.add("show");
-              setTimeout(function () {
-                window.location.href = "/auth/login";
-              }, 1500);
-              throw Error("login failed");
-            }
-            var successMsg = document.getElementById("successMessage");
-            successMsg.classList.add("show");
-            setTimeout(function () {
-              window.location.href = "/runner/dashboard";
-            }, 1500);
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(values),
           });
+
+          let data = {};
+          try {
+            data = await res.json();
+          } catch (_) {}
+
+          if (res.ok) {
+            showMsg("Login successful. Redirecting...", true);
+            setTimeout(() => (window.location.href = "/garage/admin"), 800);
+          } else {
+            showMsg(
+              "Login failed (" + res.status + ").",
+            );
+            btn.disabled = false;
+            btn.textContent = "Login";
+          }
+        } catch (err) {
+          showMsg(
+            "Could not reach the server. Check your connection and try again.",
+          );
+          btn.disabled = false;
+          btn.textContent = "Login";
         }
-      }
+      });
     </script>
   </body>
 </html>

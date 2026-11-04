@@ -1,679 +1,148 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TrySQL</title>
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parkbay – Find a garage slot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#F7F4EC',
+            mist: '#DDE6E4',
+            navy: '#0A2438',
+            ink: '#1F2729',
+            gold: '#C9AB6F'
+          },
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'] }
         }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0f1423;
-            color: #e8e7fc;
-            overflow-x: hidden;
-            width: 100%;
-        }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(168, 255, 120, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* Animated background patterns */
-        .hero-pattern {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            z-index: 0;
-        }
-
-        .pattern-grid {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(rgba(168, 255, 120, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(168, 255, 120, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            animation: gridMove 20s linear infinite;
-        }
-
-        @keyframes gridMove {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(50px, 50px); }
-        }
-
-        .pattern-dots {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .dot {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: #a8ff78;
-            border-radius: 50%;
-            opacity: 0;
-            animation: dotFloat 3s ease-in-out infinite;
-            box-shadow: 0 0 10px rgba(168, 255, 120, 0.5);
-        }
-
-        .dot:nth-child(1) { left: 10%; top: 20%; animation-delay: 0s; }
-        .dot:nth-child(2) { left: 20%; top: 60%; animation-delay: 0.5s; }
-        .dot:nth-child(3) { left: 80%; top: 30%; animation-delay: 1s; }
-        .dot:nth-child(4) { left: 70%; top: 70%; animation-delay: 1.5s; }
-        .dot:nth-child(5) { left: 50%; top: 40%; animation-delay: 2s; }
-        .dot:nth-child(6) { left: 30%; top: 80%; animation-delay: 2.5s; }
-
-        @keyframes dotFloat {
-            0%, 100% { opacity: 0; transform: translateY(0); }
-            50% { opacity: 0.6; transform: translateY(-20px); }
-        }
-
-        .pattern-circles {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        .circle {
-            position: absolute;
-            border: 2px solid rgba(168, 255, 120, 0.1);
-            border-radius: 50%;
-            animation: pulse 4s ease-in-out infinite;
-        }
-
-        .circle:nth-child(1) {
-            width: 300px;
-            height: 300px;
-            left: -50px;
-            top: 10%;
-            animation-delay: 0s;
-        }
-
-        .circle:nth-child(2) {
-            width: 200px;
-            height: 200px;
-            right: -50px;
-            top: 30%;
-            animation-delay: 1s;
-        }
-
-        .circle:nth-child(3) {
-            width: 350px;
-            height: 350px;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: -100px;
-            animation-delay: 2s;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 0.3;
-            }
-            50% {
-                opacity: 0.1;
-            }
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Hero Section */
-        .hero {
-            text-align: center;
-            padding: 100px 20px 80px;
-            position: relative;
-            min-height: 85vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 500px;
-            height: 500px;
-            max-width: 90vw;
-            background: radial-gradient(circle, rgba(168, 255, 120, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            filter: blur(80px);
-            animation: heroGlow 8s ease-in-out infinite;
-        }
-
-        @keyframes heroGlow {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 0.8; }
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 2;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .hero h1 {
-            font-size: clamp(50px, 10vw, 100px);
-            font-weight: 800;
-            margin-bottom: 24px;
-            line-height: 1.2;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            gap: 15px;
-            text-shadow: 0 0 10px rgba(168, 255, 120, 0.4);
-            background: linear-gradient(135deg, #e8e7fc 0%, #a8ff78 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: titleFloat 6s ease-in-out infinite;
-            word-wrap: break-word;
-        }
-
-        .hero h1 svg {
-            width: clamp(60px, 15vw, 100px);
-            height: clamp(60px, 15vw, 100px);
-        }
-
-        @keyframes titleFloat {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .hero .subtitle {
-            font-size: clamp(18px, 3.5vw, 24px);
-            margin-bottom: 30px;
-            opacity: 0.95;
-            font-weight: 500;
-            color: #e8e7fc;
-        }
-
-        .hero .tagline {
-            font-size: clamp(14px, 2vw, 16px);
-            margin-bottom: 40px;
-            opacity: 0.9;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-            line-height: 1.6;
-            color: #e8e7fc;
-            padding: 0 10px;
-        }
-
-        .cta-button {
-            display: inline-block;
-            background: linear-gradient(135deg, #a8ff78 0%, #78ffd6 100%);
-            color: #0f1423;
-            padding: clamp(14px, 2vw, 18px) clamp(32px, 5vw, 48px);
-            font-size: clamp(16px, 2.5vw, 20px);
-            font-weight: 700;
-            border-radius: 12px;
-            text-decoration: none;
-            box-shadow: 0 8px 24px rgba(168, 255, 120, 0.3);
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
-
-        .cta-button:hover {
-            background: linear-gradient(135deg, #78ffd6 0%, #a8ff78 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(168, 255, 120, 0.4);
-        }
-
-        .cta-button:active {
-            transform: translateY(0);
-        }
-
-        /* Features Section */
-        .features {
-            margin: 0 20px;
-            padding: 60px 20px;
-        }
-
-        .features h2 {
-            text-align: center;
-            font-size: clamp(32px, 5vw, 42px);
-            margin-bottom: 60px;
-            font-weight: 700;
-            color: #e8e7fc;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-            gap: clamp(20px, 3vw, 30px);
-            margin-bottom: 40px;
-        }
-
-        .feature-card {
-            background: rgba(37, 39, 55, 0.4);
-            backdrop-filter: blur(20px);
-            border-radius: 16px;
-            padding: clamp(30px, 4vw, 40px) clamp(20px, 3vw, 30px);
-            text-align: center;
-            border: 1px solid rgba(232, 231, 252, 0.1);
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
-        .feature-card:hover {
-            background: rgba(37, 39, 55, 0.6);
-            transform: translateY(-5px);
-            border: 2px solid rgba(167, 255, 120, 0.703);
-        }
-
-        .feature-icon {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .feature-icon svg {
-            width: clamp(48px, 8vw, 80px);
-            height: clamp(48px, 8vw, 80px);
-        }
-
-        .feature-card h3 {
-            font-size: clamp(18px, 2.5vw, 24px);
-            margin-bottom: 15px;
-            font-weight: 600;
-            color: #e8e7fc;
-        }
-
-        .feature-card p {
-            font-size: clamp(14px, 1.8vw, 16px);
-            line-height: 1.6;
-            opacity: 0.9;
-            color: #e8e7fc;
-        }
-
-        /* Demo Section */
-        .demo-section {
-            margin: 0 20px;
-            padding: 60px 20px;
-        }
-
-        .demo-section h2 {
-            text-align: center;
-            font-size: clamp(28px, 4vw, 36px);
-            margin-bottom: 30px;
-            font-weight: 700;
-            color: #e8e7fc;
-        }
-
-        .demo-preview {
-            background: rgba(15, 20, 35, 0.6);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: clamp(15px, 3vw, 30px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(168, 255, 120, 0.1);
-            max-width: 100%;
-        }
-
-        .demo-window {
-            background: #252737;
-            border: 1px solid rgba(230, 230, 230, 0.2);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .demo-header {
-            background: rgba(37, 39, 55, 0.8);
-            padding: 12px 20px;
-            font-size: clamp(10px, 1.5vw, 12px);
-            color: #a8ff78;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .demo-dot {
-            width: clamp(8px, 1.5vw, 12px);
-            height: clamp(8px, 1.5vw, 12px);
-            border-radius: 50%;
-            background: #94a3b8;
-        }
-
-        .demo-input {
-            padding: clamp(15px, 2.5vw, 20px);
-            background: #0f1423;
-            border-bottom: 1px solid rgba(230, 230, 230, 0.2);
-        }
-
-        .demo-textarea {
-            width: 100%;
-            border: 1px solid rgba(168, 255, 120, 0.3);
-            border-radius: 6px;
-            padding: 12px;
-            font-family: 'Courier New', monospace;
-            font-size: clamp(11px, 1.8vw, 14px);
-            color: #e8e7fc;
-            resize: none;
-            background: rgba(37, 39, 55, 0.5);
-        }
-
-        .demo-output {
-            padding: clamp(15px, 2.5vw, 20px);
-            background: #0f1423;
-            overflow-x: auto;
-        }
-
-        .demo-output pre {
-            color: #a8ff78;
-            font-family: 'Courier New', monospace;
-            font-size: clamp(10px, 1.5vw, 14px);
-            margin: 0;
-            white-space: pre;
-            overflow-x: auto;
-        }
-
-        /* Footer CTA */
-        .footer-cta {
-            text-align: center;
-            padding: clamp(60px, 8vw, 80px) 20px clamp(40px, 6vw, 60px);
-        }
-
-        .footer-cta h2 {
-            font-size: clamp(28px, 5vw, 42px);
-            margin-bottom: 30px;
-            font-weight: 700;
-            color: #e8e7fc;
-        }
-
-        .footer-cta p {
-            font-size: clamp(14px, 2.5vw, 18px);
-            margin-bottom: 40px;
-            opacity: 0.9;
-            color: #e8e7fc;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-            padding: 0 10px;
-        }
-
-        /* Footer */
-        .footer {
-            text-align: center;
-            padding: 40px 20px;
-            opacity: 0.7;
-            border-top: 1px solid rgba(168, 255, 120, 0.1);
-            color: #e8e7fc;
-        }
-
-        .footer p {
-            font-size: clamp(11px, 1.5vw, 14px);
-            margin-top: 10px;
-        }
-
-        .footer a {
-            color: #a8ff78;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .footer a:hover {
-            color: #78ffd6;
-        }
-
-        /* Mobile Optimizations */
-        @media (max-width: 768px) {
-            .hero {
-                padding: 60px 15px 40px;
-                min-height: 70vh;
-            }
-
-            .circle:nth-child(1) {
-                width: 200px;
-                height: 200px;
-                left: -80px;
-            }
-
-            .circle:nth-child(2) {
-                width: 150px;
-                height: 150px;
-                right: -60px;
-            }
-
-            .circle:nth-child(3) {
-                width: 250px;
-                height: 250px;
-                bottom: -80px;
-            }
-
-            .features-grid {
-                gap: 20px;
-            }
-
-            .demo-output {
-                padding: 15px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .hero {
-                padding: 40px 10px 30px;
-            }
-
-            .circle:nth-child(1) {
-                width: 150px;
-                height: 150px;
-                left: -60px;
-            }
-
-            .circle:nth-child(2) {
-                width: 120px;
-                height: 120px;
-                right: -50px;
-            }
-
-            .circle:nth-child(3) {
-                width: 200px;
-                height: 200px;
-            }
-
-            .features {
-                padding: 40px 15px;
-            }
-
-            .demo-section {
-                padding: 40px 15px;
-            }
-
-            .footer-cta {
-                padding: 50px 15px 40px;
-            }
-        }
-
-        @media (max-width: 350px) {
-            .hero h1 {
-                font-size: 40px;
-            }
-
-            .hero .subtitle {
-                font-size: 16px;
-            }
-
-            .hero .tagline {
-                font-size: 13px;
-            }
-
-            .cta-button {
-                padding: 12px 24px;
-                font-size: 14px;
-            }
-        }
-    </style>
+      }
+    }
+  </script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 </head>
-<body>
-    <div class="container">
-        <div class="container">
-        <!-- Hero Section -->
-        <div class="hero">
-            <!-- Animated Patterns -->
-            <div class="hero-pattern">
-                <div class="pattern-grid"></div>
-                <div class="pattern-dots">
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                    <span class="dot"></span>
+<body class="min-h-screen bg-cream font-sans text-ink antialiased">
+  <!-- route : / -->
+  <div class="mx-auto max-w-6xl px-4 pt-4">
+    <nav class="flex items-center justify-between rounded-full bg-mist px-6 py-3">
+      <a href="/" class="text-lg font-extrabold tracking-tight text-navy">Parkbay</a>
+      <a href="/auth/login" class="rounded-full bg-navy px-5 py-2 text-sm font-semibold text-cream transition hover:bg-ink focus:outline-none focus:ring-2 focus:ring-gold">Login / Register</a>
+    </nav>
+
+    <!-- Map Container -->
+    <section class="mt-6 overflow-hidden rounded-3xl bg-ink shadow-lg">
+      <div id="map" class="h-[75vh] min-h-[600px] w-full z-10 flex items-center justify-center text-cream font-semibold text-sm">
+        📍 Requesting your exact location access...
+      </div>
+    </section>
+
+    <section class="mx-auto max-w-2xl px-2 py-16 text-center">
+      <h1 class="text-4xl font-extrabold leading-tight tracking-tight text-navy sm:text-5xl">Find a garage slot before you leave home.</h1>
+      <p class="mt-5 text-lg text-ink/80">Pick a garage near your exact location, check available hours, and reserve a spot.</p>
+      <a href="/auth/register" class="mt-8 inline-block rounded-full bg-gold px-7 py-3 font-bold text-navy transition hover:brightness-95 focus:outline-none focus:ring-2 focus:ring-navy">Create a free account</a>
+    </section>
+  </div>
+
+  <footer class="bg-cream py-12 text-center text-ink">
+    <hr class="border-navy/10">
+    <p class="text-lg font-bold mt-8">Parkbay</p>
+    <p class="mt-2 text-sm">Garage slot booking for riders and drivers.</p>
+    <p class="mt-6 text-xs">&copy; 2026 Parkbay</p>
+  </footer>
+
+  <!-- Leaflet JavaScript -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <script>
+    // Request exact browser geolocation immediately (No fallback center)
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userLat = position.coords.latitude;
+          const userLng = position.coords.longitude;
+
+          // 1. Initialize map strictly at user's exact GPS coordinates
+          const map = L.map('map').setView([userLat, userLng], 14);
+
+          // 2. Add OpenStreetMap Tile Layer
+          L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          }).addTo(map);
+
+          // 3. Drop marker for user's exact position
+          L.marker([userLat, userLng]).addTo(map)
+            .bindPopup('<div class="p-1 font-sans text-navy font-bold">📍 You are here</div>')
+            .openPopup();
+
+          // 4. Generate dummy checkpoints dynamically relative to user's real coordinates
+          const checkpoints = [
+            {
+              name: "Station Plaza Garage",
+              address: "Main Terminal Approach",
+              coords: [userLat + 0.012, userLng + 0.010],
+              timing: "06:00 - 22:00",
+              url: "/garage/user/1"
+            },
+            {
+              name: "Central Hub Parking",
+              address: "Commercial Street Zone",
+              coords: [userLat - 0.010, userLng + 0.018],
+              timing: "08:00 - 20:00",
+              url: "/garage/user/2"
+            },
+            {
+              name: "Lakeview Bay",
+              address: "Secretariat Road Area",
+              coords: [userLat - 0.015, userLng - 0.012],
+              timing: "09:00 - 19:00",
+              url: "/garage/raj_parking/3"
+            }
+          ];
+
+          // 5. Render checkpoints with popup cards and booking link redirection
+          checkpoints.forEach(point => {
+            const marker = L.marker(point.coords).addTo(map);
+
+            const cardHtml = `
+              <div class="p-1 font-sans text-ink">
+                <h3 class="text-base font-extrabold text-navy m-0">${point.name}</h3>
+                <p class="text-xs text-ink/70 mt-1 mb-2">${point.address}</p>
+                <div class="inline-block rounded-full bg-mist px-2.5 py-0.5 text-xs font-semibold text-navy mb-3">
+                  ${point.timing}
                 </div>
-                <div class="pattern-circles">
-                    <div class="circle"></div>
-                    <div class="circle"></div>
-                    <div class="circle"></div>
+                <div>
+                  <a href="${point.url}" class="inline-block w-full rounded-full bg-navy px-4 py-2 text-center text-xs font-bold text-cream hover:bg-gold hover:text-navy transition focus:outline-none">
+                    View Slots & Book &rarr;
+                  </a>
                 </div>
+              </div>
+            `;
+
+            marker.bindPopup(cardHtml, { maxWidth: 240 });
+          });
+        },
+        (error) => {
+          document.getElementById('map').innerHTML = `
+            <div style="padding: 24px; text-align: center; color: #F7F4EC;">
+              <p style="font-weight: 700; font-size: 16px; margin-bottom: 8px;">Location Permission Required</p>
+              <p style="font-size: 13px; opacity: 0.8;">Please enable location access in your browser settings to view garages around you.</p>
             </div>
-
-            <!-- Hero Content -->
-            <div class="hero-content">
-                <h1><svg width="100" height="100" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 2c-1.105 0-2 .9-2 2v16c0 1.1.895 2 2 2h18c1.105 0 2-.9 2-2V4c0-1.1-.895-2-2-2z" fill="#2c3e50"/><path d="M3 2a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" fill="#34495e"/><path d="M4 5.125V6.25L7 8 4 9.75v1.125L9 8zM9 10v1h5v-1z" fill="#ecf0f1"/></svg>
-                    TrySQL</h1>
-                <p class="subtitle">Learn SQL by Doing</p>
-                <p class="tagline">
-                    Practice SQL queries in your browser without any setup. Write, run, and see results instantly with our interactive SQL playground designed for learners and professionals.
-                </p>
-                <button class="cta-button" onclick="window.location.href='auth/register'">
-                    Get Started Now →
-                </button>
-            </div>
-        </div>
-
-         <!-- Features Section -->
-        <div class="features">
-            <h2>Why You'll Love It</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <span class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 27 32" xml:space="preserve"><g fill="#fff"><path d="M23.5 32c.869 0 1.5-.631 1.5-1.5v-28c0-.869-.631-1.5-1.5-1.5h-20C2.631 1 2 1.631 2 2.5v1.167a.5.5 0 0 0 1 0V2.5c0-.313.187-.5.5-.5h4.562v29H3.5c-.313 0-.5-.187-.5-.5v-.917a.5.5 0 0 0-1 0v.917c0 .869.631 1.5 1.5 1.5zM9 2h14.5c.313 0 .5.187.5.5v28c0 .313-.187.5-.5.5H9zm18 27.5v-26a.5.5 0 0 0-1 0v26a.5.5 0 0 0 1 0"/><path d="M.5 11h4a.5.5 0 0 0 0-1h-4a.5.5 0 0 0 0 1m0-4h4a.5.5 0 0 0 0-1h-4a.5.5 0 0 0 0 1m0 8h4a.5.5 0 0 0 0-1h-4a.5.5 0 0 0 0 1m0 8h4a.5.5 0 0 0 0-1h-4a.5.5 0 0 0 0 1m0-4h4a.5.5 0 0 0 0-1h-4a.5.5 0 0 0 0 1m0 8h4a.5.5 0 0 0 0-1h-4a.5.5 0 0 0 0 1"/></g></svg></span>
-                    <h3>Notebook-Style Cells</h3>
-                    <p>Organize your commands in separate cells, just like Jupyter notebooks. Keep your work clean and structured.</p>
-                </div>
-
-                <div class="feature-card">
-                    <span class="feature-icon"><svg width="100" height="100" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="5" width="17" height="14" rx="2" stroke="#ffff"/><path d="m7 10 2 2-2 2" stroke="#fff" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 14h4" stroke="#fff" stroke-linecap="round"/></svg></span>
-                    <h3>No Terminal Experience Needed</h3>
-                    <p>Clear labels, helpful hints, and visual buttons make it easy for anyone to run shell commands confidently.</p>
-                </div>
-
-                <div class="feature-card">
-                    <span class="feature-icon"><svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.32 13.28h3.09v7.2c0 1.06 1.32 1.56 2.02.76l7.57-8.6c.66-.75.13-1.92-.87-1.92h-3.09v-7.2c0-1.06-1.32-1.56-2.02-.76l-7.57 8.6c-.65.75-.12 1.92.87 1.92" stroke="#fff" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/><path opacity=".4" d="M8.5 4h-7m6 16h-6m3-8h-3" stroke="#ededed" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                    <h3>Instant Visual Feedback</h3>
-                    <p>See your command output immediately in a beautiful, color-coded terminal display. No confusion, just results.</p>
-                </div>
-
-                <div class="feature-card">
-                    <span class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 64 64" xml:space="preserve"><g fill="none" stroke="#fff" stroke-width="2" stroke-miterlimit="10"><path d="M1 15h54v42H1z"/><path d="M11 12V7h52v43h-5M1 23h54m-45-4H6m12 0h-4m12 0h-4"/></g></svg></span>
-                    <h3>Multiple Commands at Once</h3>
-                    <p>Add unlimited cells to run different commands side-by-side. Compare outputs and test variations easily.</p>
-                </div>
-
-                <div class="feature-card">
-                    <span class="feature-icon"><svg width="80" height="80" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path style="fill:#333" d="M66 14 48 30v9l2 1 2-7 14-12zm28 13L75 43v8l7 3-19 18v26l22-24-2-11 14-14zM53 41 33 58v20l6-17 14-12z"/><path style="fill:#999" d="M48 30 26 20 46 4.6 66 14m9 29L52 33l19-16 23 10M63 72 39 61l20-17 23 10m-49 4L11 48l19-17 23 10"/><path style="fill:#ccc" d="m50 40 2-7 23 10v8l-16-7-6 5v-8zm-32 1 8-21 22 10v9l-18-8zM3.2 67 11 48l22 10v20l6-17 24 11v26z"/><path style="fill:none;stroke:#111;stroke-width:2" d="M65 53c-2-3-6-3-7-1s5 4 2 7c-1 1-6 0-7-3m19-35-4 7 6-1v5l8-5M47 16l1 4m3-8c-2-2-6-2-9 1-2 2 0 5 4 5 3 0 7-3 5-6zM28 41l6 3m-11-1 12-4-3 9"/><path style="fill:none;stroke:#222;stroke-width:1" d="m18 41 8-21L46 4.6 66 14v7M32 82l7-21 20-17 23 10 3 20-22 24L3.2 67 11 48l19-17 23 10v8m-3-9 2-7 19-16 23 10 3 22-14 14"/></svg></span>
-                    <h3>Keyboard Shortcuts</h3>
-                    <p>Power users can use Ctrl+Enter to run commands quickly. Work at your own pace, your way.</p>
-                </div>
-
-                <div class="feature-card">
-                    <span class="feature-icon"><svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 32 32" xml:space="preserve"><path d="M8.5 10h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 0 1M7 11.5a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 0-1h-2a.5.5 0 0 0-.5.5m.5 6.5h2a.5.5 0 0 0 0-1h-2a.5.5 0 0 0 0 1m-1 2h2a.5.5 0 0 0 0-1h-2a.5.5 0 0 0 0 1M22 13.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1 0-1h13a.5.5 0 0 1 .5.5M8.5 16h13a.5.5 0 0 0 0-1h-13a.5.5 0 0 0 0 1m8-4h-5a.5.5 0 0 1 0-1h5a.5.5 0 0 1 0 1m4-3h-10a.5.5 0 0 0 0 1h10a.5.5 0 0 0 0-1M29 4H3a3 3 0 0 0-3 3v16a3 3 0 0 0 3 3h9v3h-1.5a.5.5 0 0 0 0 1h11a.5.5 0 0 0 0-1H20v-3h9a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3M19 29h-6v-3h6zm12-6a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h26a2 2 0 0 1 2 2z" style="fill:#fff"/></svg></span>
-                    <h3>Beautiful Interface</h3>
-                    <p>Modern design with smooth animations and intuitive controls. Who said terminals have to be ugly?</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Demo Section -->
-        <div class="demo-section">
-            <h2>See It In Action</h2>
-            <div class="demo-preview">
-                <div class="demo-window">
-                    <div class="demo-header">
-                        <span class="demo-dot"></span>
-                        <span class="demo-dot"></span>
-                        <span class="demo-dot"></span>
-                        <span>[1] INPUT</span>
-                    </div>
-                    <div class="demo-input">
-                        <textarea class="demo-textarea" rows="2" readonly>SELECT * FROM student;</textarea>
-                    </div>
-                    <div class="demo-output">
-                        <pre>
-+------+-------------+-------+--------+
-|   id | name        |   age | addr   |
-+======+=============+=======+========+
-|    1 | John Doe    |    24 | US     |
-+------+-------------+-------+--------+
-|    2 | Lisa Nebula |    25 | US     |
-+------+-------------+-------+--------+
-
-2 row(s) in set
-                        </pre>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer CTA -->
-        <div class="footer-cta">
-            <h2>Ready to Master SQL ?</h2>
-            <p>Join thousands of developers practicing SQL queries every day. No credit card required, no installation needed.</p>
-            <button class="cta-button" onclick="window.location.href='#'">
-                Launch SQL Shell →
-            </button>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer">
-            <p style="font-size:14px;">TrySQL - Your browser-based SQL playground</p>
-            <p style="margin-top: 20px; font-size: 12px;">Created and maintained by <a
-              style="color: #a8ff78;"
-              href="https://github.com/Abhijit-71"
-              target="_blank"
-              >@Abhijit-71</a
-            ></p>
-            <p style="margin-top: 20px; font-size: 12px;">© 2025-2026 TrySQL. All rights reserved.</p>
-        </div>
-    </div>
+          `;
+          console.error("Geolocation denied or unavailable:", error);
+        },
+        { enableHighAccuracy: true, timeout: 12000 }
+      );
+    } else {
+      document.getElementById('map').innerHTML = '<div style="padding: 24px; text-align: center; color: #F7F4EC;">Geolocation is not supported by your browser.</div>';
+    }
+  </script>
 </body>
 </html>
