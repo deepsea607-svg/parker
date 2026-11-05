@@ -207,8 +207,9 @@
     const hostUrl = window.location.origin;
       $('qrCards').innerHTML = garages.length ? garages.map(g => {
         const publicUrl = `${hostUrl}/garage/${userData.username}/${g.id}`;
-        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(publicUrl)}`;
         const bookingUrl = `${hostUrl}/garage/qr/${userData.username}/${g.id}`;
+        const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(bookingUrl)}`;
+        
 
         return `
           <div class="flex flex-col sm:flex-row items-center gap-5 rounded-2xl bg-mute p-5 shadow border border-navy/10">
