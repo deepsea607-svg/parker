@@ -1,24 +1,6 @@
-# TrySQL
-
-A lightweight web-based SQL shell built with **Flask** and **SQLite**.  
-This project provides a browser-accessible interface to run SQL queries, view results, and manage a local SQLite database.
-
-
-
-## 🚀 Features
-- Web interface for executing SQL queries
-- Built with Flask (Python microframework)
-- Uses SQLite as the database backend
-- Simple, minimal UI for query input and result display
-- Error handling for invalid queries
-- Easily extensible for authentication, multiple databases, or advanced features
-
-
-## 📂 Project Structure
-```
-```
-
-
+# ParkBay
+It is the source code for ParkBay website.
+Copyright (c) 2026 Abhijit-71 & Team. All Rights Reserved.
 
 
 ## ⚙️ Installation
@@ -27,52 +9,21 @@ This project provides a browser-accessible interface to run SQL queries, view re
    ```bash
    git clone https://github.com/abhijit-71/TrySQL.git
 
-   cd TrySQL
+   cd parker
 
-   python3 -m venv venv
+   python3 -m venv .venv
 
    source venv/bin/activate   # On Linux/Mac
 
    venv\Scripts\activate      # On Windows
 
-   pip install -r requirements.txt
+   pip install -r requirements.txt #recommended for default dev environments
+
+   uv sync   # if using uv package manager
    ```
-
-
-
-## 📝 Usage
-- Enter SQL queries into the text box (e.g., `SELECT * FROM users;`).
-- Results will be displayed in a table format.
-- Errors will be shown if the query is invalid.
-
-
-
-## 📦 Dependencies
-- Flask  
-- SQLite (built-in with Python)  
-- Jinja2 (bundled with Flask)  
-
-
-
-## 🔒 Security Notes
-This shell executes raw SQL queries — **do not expose it publicly without authentication**.
-
-For production, consider:
-- Adding user authentication  
-- Restricting query types  
-- Using parameterized queries to prevent injection  
-
-
-
-## 🌱 Future Improvements
-- User authentication and role-based access  
-- Support for multiple databases  
-- Query history and saved queries  
-- Export results to CSV/JSON  
-- Syntax highlighting in the query editor  
-
-
 
 ## 🤝 Contributing
 Pull requests are welcome! For major changes, please open an issue first to discuss what you’d like to add.
+Collaborators please dont modify existing files , if u dont know what u are doing....
+And never ever run ```git push origin --force``` or anything with ```--force``` flag from ur local system if u are not aware what u are doing.
 

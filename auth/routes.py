@@ -1,12 +1,15 @@
-from flask import request , jsonify , render_template , redirect
-from flask_jwt_extended import create_access_token , set_access_cookies , unset_access_cookies , jwt_required , verify_jwt_in_request
-from auth import auth
-from app.models import db , User
-
-
-# register api routes
-
+from flask import jsonify, redirect, render_template, request
+from flask_jwt_extended import (
+    create_access_token,
+    jwt_required,
+    set_access_cookies,
+    unset_access_cookies,
+    verify_jwt_in_request,
+)
 from sqlalchemy.exc import IntegrityError
+
+from app.models import User, db
+from auth import auth
 
 
 @auth.route("/reg-api", methods=["POST"])
@@ -15,7 +18,6 @@ def reg_api():
     if not data:
         return jsonify({"msg": "Invalid or missing JSON body"}), 400
 
-    # required fields
     required = ["username", "password", "password2", "contact", "address"]
     missing = [f for f in required if not str(data.get(f, "")).strip()]
     if missing:
@@ -27,11 +29,17 @@ def reg_api():
     contact = data["contact"].strip()
     address = data["address"].strip()
 
+    if password2 != password:
+        return jsonify(
+            {
+                "msg": "Password2 dont match",
+            }
+        ), 409
 
     if User.query.filter_by(username=username).first():
         return jsonify({"msg": "Username already taken"}), 409
 
-    new_user = User(username=username,password=password,contact=contact,address=address) #type:ignore
+    new_user = User(username=username, password=password, contact=contact, address=address)  # type:ignore
 
     try:
         db.session.add(new_user)
@@ -40,15 +48,17 @@ def reg_api():
         db.session.rollback()
         return jsonify({"msg": "Username already taken"}), 409
 
-    return jsonify({
-        "msg": "User registered successfully",
-    }), 201
-    
-        
+    return jsonify(
+        {
+            "msg": "User registered successfully",
+        }
+    ), 201
+
+
 # register api routes
-@auth.route("/login-api",methods=["POST"])
+@auth.route("/login-api", methods=["POST"])
 def login_api():
-    
+
     data = request.get_json()
     username = data.get("username").strip()
     password = data.get("password").strip()
@@ -60,8 +70,8 @@ def login_api():
 
     # Generate JWT token
     access_token = create_access_token(identity=str(user.id))
-    resp = jsonify({"msg": "login successful"},200)
-    set_access_cookies(resp,access_token)
+    resp = jsonify({"msg": "login successful"}, 200)
+    set_access_cookies(resp, access_token)
     return resp
 
 
@@ -73,15 +83,15 @@ def logout_api():
     return resp, 200
 
 
-
-#page serving routes
+# page serving routes
 @auth.route("/register")
 def register():
     try:
         verify_jwt_in_request()
         return redirect("/garage/admin")
     except:
-        return render_template('register.html')
+        return render_template("register.html")
+
 
 @auth.route("/login")
 def login():
@@ -89,4 +99,5 @@ def login():
         verify_jwt_in_request()
         return redirect("/garage/admin")
     except:
-        return render_template('login.html')
+        return render_template("login.html")
+
