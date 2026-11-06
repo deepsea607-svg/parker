@@ -7,15 +7,15 @@ Copyright (c) 2026 Abhijit-71 & Team. All Rights Reserved.
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/abhijit-71/TrySQL.git
+   git clone https://github.com/deepsea607-svg/parker.git  # use the ssh link ; now it is private so https will not work for local origin transactions
 
    cd parker
 
    python3 -m venv .venv
 
-   source venv/bin/activate   # On Linux/Mac
+   source .venv/bin/activate   # On Linux/Mac
 
-   venv\Scripts\activate      # On Windows
+   .venv\Scripts\activate      # On Windows
 
    pip install -r requirements.txt #recommended for default dev environments
 
